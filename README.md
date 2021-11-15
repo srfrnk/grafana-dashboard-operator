@@ -2,6 +2,10 @@
 
 A Kubernetes operator to deploy Grafana dashboards
 
+## TL;DR
+
+Jump to [Usage](#usage)
+
 ## Prerequisites
 
 A K8s CRD operator to maintain [Grafana](https://github.com/grafana/) [dashboards](https://grafana.com/docs/grafana/latest/dashboards/?pg=graf-resources&plcmt=create-a-dashboard).
@@ -259,7 +263,13 @@ spec:
 3. Run `make local-update`
 4. Run `make pf-grafana` then open your browser at http://localhost:3000 to Grafana GUI.
 
-### Tets Examples
+### Tests Examples
+
+```bash
+make deploy-examples
+```
+
+Or
 
 ```bash
 kubectl apply -f ./examples/dashboard-test-1.yaml
