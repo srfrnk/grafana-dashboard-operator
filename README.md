@@ -90,11 +90,13 @@ The CRD should allow using a Grafana JSON Model as well as Grafonnet code.
 ## Usage
 
 1. Connect kubectl to your cluster.
-1. Make sure `Grafana` is deployed i.e. by installing `kube-prometheus-stack` from `https://prometheus-community.github.io/helm-charts`
-1. Make sure `Metacontroller` is deployed i.e. by running `kubectl apply -n metacontroller -k https://github.com/metacontroller/metacontroller/manifests/production`
-1. Install `grafana-dashboard-operator` by running `kubectl apply -n grafana-dashboard-operator -f https://github.com/srfrnk/grafana-dashboard-operator/releases/latest/download/grafana-dashboard-operator-manifests.yaml`
-1. See [API docs](https://srfrnk.github.io/grafana-dashboard-operator/)
-1. Deploy `GrafanaDashboard` objects for your dashboards See example below.
+2. Make sure `Grafana` is deployed i.e. by installing `kube-prometheus-stack` from `https://prometheus-community.github.io/helm-charts` in namespace `monitoring`. **[Optional]**
+3. Make sure `Metacontroller` is deployed i.e. by running `kubectl apply -n metacontroller -k https://github.com/metacontroller/metacontroller/manifests/production`
+4. Install `grafana-dashboard-operator` by running `kubectl apply -n grafana-dashboard-operator -f https://github.com/srfrnk/grafana-dashboard-operator/releases/latest/download/grafana-dashboard-operator-manifests.yaml`
+5. Update the `ConfigMap` named `grafana-dashboard-operator` (in namespace `grafana-dashboard-operator`) `grafana-host` property to point to your `Grafana` instance. **Not required if step 2 has been followed**
+6. Update the `Secret` named `grafana-api` (in namespace `grafana-dashboard-operator`) `token` property to a valid [Grafana API Key Token](https://grafana.com/docs/grafana/latest/http_api/auth/) with appropriate permissions (E.g. `Admin` role)
+7. See [API docs](https://srfrnk.github.io/grafana-dashboard-operator/)
+8. Deploy `GrafanaDashboard` objects for your dashboards See example below.
 
 ## GrafanaDashboard Example
 

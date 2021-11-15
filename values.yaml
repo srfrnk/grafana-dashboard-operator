@@ -1,7 +1,0 @@
-buildNumber: "1"
-version: "0.1.0"
-
-namespace: grafana-dashboard-operator
-group: grafana.operators
-imageRepo: sfrank4mc/
-grafanaHost: http://kube-prometheus-stack-grafana.monitoring
