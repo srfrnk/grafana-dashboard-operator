@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+printf "Content-type: application/json\n\n"
+printf "{}\n"

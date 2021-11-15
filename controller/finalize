@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+IFS=$'\n'
+printf 'Finalize...\n' >&2
+
+REQUEST=$(cat)
+printf 'Request: %s\n' "$(printf '%s' "${REQUEST}" | jq -c | sed s%\\\\%\%)" >&2
+printf '%s' "${REQUEST}" | jq -c | sed s%\\\\%\% >/tmp/r.json
+
+token="$(cat /grafana_api/token)"
+host=${GRAFANA_HOST}
+
+uids=$(yq e -I0 ".parent.status.uids.[]" <(printf '%s' "${REQUEST}"))
+for uid in ${uids}; do
+  curl -k --silent -X DELETE -H 'Content-Type: application/json' -H "Authorization: Bearer ${token}" "${host}/api/dashboards/uid/${uid}" >&2
+done
+
+RESPONSE=$(jsonnet finalize.jsonnet --tla-str now=$(date --iso-8601=ns) --tla-code-file request=<(printf '%s' "${REQUEST}") | jq -c)
+printf 'Response: %s\n' "${RESPONSE}" >&2
+
+printf "Content-type: application/json\n\n"
+printf '%s' "${RESPONSE}"

@@ -1,0 +1,58 @@
+
+apiVersion: grafana.operators/v1
+kind: GrafanaDashboard
+metadata:
+  name: grafonnet-example
+  namespace: default
+spec:
+  grafonnet:
+    "board1.jsonnet": |-
+      local grafana = import './vendor/grafonnet/grafana.libsonnet';
+      local prometheus = grafana.prometheus;
+      local server_dashboard = (import './library1.libsonnet').server_dashboard;
+      server_dashboard('stg')
+
+    "library1.libsonnet": |-
+      local grafana = import 'vendor/grafonnet/grafana.libsonnet';
+      local prometheus = grafana.prometheus;
+      local single_app_dashboard = (import './library2.libsonnet').single_app_dashboard;
+      {
+        server_dashboard(env)::
+          single_app_dashboard('server', 'deployment', env)
+      }
+
+    "library2.libsonnet": |-
+      local grafana = import 'vendor/grafonnet/grafana.libsonnet';
+      local dashboard = grafana.dashboard;
+      local row = grafana.row;
+      local singlestat = grafana.singlestat;
+      local prometheus = grafana.prometheus;
+      local template = grafana.template;
+      {
+        single_app_dashboard(app_name, app_type, env)::
+          {
+            folder: 'test folder',
+            overwrite: true,
+            dashboard: dashboard.new(
+              'dashboard 4',
+              schemaVersion=16,
+              tags=[app_name, 'Some Label', env],
+              graphTooltip=1,
+            )
+            .addPanel(
+              grafana.graphPanel.new(
+                'some metric',
+              )
+              .addTarget(
+                prometheus.target(
+                  expr='cluster:namespace:pod_cpu:active:kube_pod_container_resource_limits',
+                )
+              ), gridPos={
+                h: 10,
+                w: 12,
+                x: 0,
+                y: 1,
+              },
+            )
+          },
+      }
