@@ -55,7 +55,7 @@ jobs:
 
       - run: |-
           docker run --mount "type=bind,src=$(pwd)/manifests,dst=/src" \
-            ghcr.io/srfrnk/k8s-jsonnet-manifest-packager:latest -- \
+            ghcr.io/srfrnk/k8s-jsonnet-manifest-packager:latest -- /src \
             --tla-str 'imagePrefix=${{env.REGISTRY}}/${{env.IMAGE_PREFIX}}' \
             --tla-str 'buildNumber=${{env.VERSION}}.${{env.BUILD_NUMBER}}' \
             > ./grafana-dashboard-operator-manifests.yaml
