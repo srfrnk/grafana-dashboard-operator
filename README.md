@@ -88,6 +88,7 @@ The CRD should allow using a Grafana JSON Model as well as Grafonnet code.
 1. Connect kubectl to your cluster.
 1. Make sure `Grafana` is deployed i.e. by installing `kube-prometheus-stack` from `https://prometheus-community.github.io/helm-charts`
 1. Make sure `Metacontroller` is deployed i.e. by running `kubectl apply -n metacontroller -k https://github.com/metacontroller/metacontroller/manifests/production`
+1. Install `grafana-dashboard-operator` by running `kubectl apply -n grafana-dashboard-operator -f https://github.com/srfrnk/grafana-dashboard-operator/releases/latest/download/grafana-dashboard-operator-manifests.yaml`
 1. See [API docs](https://srfrnk.github.io/grafana-dashboard-operator/)
 1. Deploy `GrafanaDashboard` objects for your dashboards See example below.
 
@@ -246,18 +247,6 @@ spec:
           },
       }
 ```
-
-<!--
-
-## Use with Helm
-
-1. Connect helm and kubectl to your cluster.
-2. Make sure `Grafana` is deployed i.e. by installing `kube-prometheus-stack` from `https://prometheus-community.github.io/helm-charts`
-3. Make sure `Metacontroller` is deployed i.e. by running `kubectl apply -n metacontroller -k https://github.com/metacontroller/metacontroller/manifests/production`
-4. Set correct configuration in [values.yaml](./values.yaml)
-5. Build and push image `make release-image`
-6. Install helm template i.e `helm install -n grafana-dashboard-operator grafana-dashboard-operator .`
-   -->
 
 ## Run Locally (+ Development)
 
