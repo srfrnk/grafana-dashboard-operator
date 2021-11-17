@@ -6,14 +6,14 @@ minikube-start:
 	minikube start
 
 setup:
-	# kubectl config use-context minikube
-	# - kubectl create namespace grafana-dashboard-operator
-	# - kubectl create namespace monitoring
-	# - kubectl create namespace metacontroller
-	# - helm upgrade --namespace monitoring --install --wait kube-prometheus-stack --repo https://prometheus-community.github.io/helm-charts kube-prometheus-stack
-	# kubectl wait deployments.apps/kube-prometheus-stack-grafana --namespace monitoring --for condition=available --timeout=0s --request-timeout='0'
-	# - kubectl apply -n metacontroller -k https://github.com/metacontroller/metacontroller/manifests/production
-	# sleep 120 # Allow time for Grafana to kick in - next thing we're calling it's API...
+	kubectl config use-context minikube
+	- kubectl create namespace grafana-dashboard-operator
+	- kubectl create namespace monitoring
+	- kubectl create namespace metacontroller
+	- helm upgrade --namespace monitoring --install --wait kube-prometheus-stack --repo https://prometheus-community.github.io/helm-charts kube-prometheus-stack
+	kubectl wait deployments.apps/kube-prometheus-stack-grafana --namespace monitoring --for condition=available --timeout=0s --request-timeout='0'
+	- kubectl apply -n metacontroller -k https://github.com/metacontroller/metacontroller/manifests/production
+	sleep 120 # Allow time for Grafana to kick in - next thing we're calling it's API...
 	- kubectl delete secret --namespace grafana-dashboard-operator grafana-api
 	- kubectl --namespace grafana-dashboard-operator create secret generic grafana-api \
 		--from-literal=token=$(shell \
