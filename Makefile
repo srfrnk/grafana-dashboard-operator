@@ -29,7 +29,7 @@ update: FORCE build_number
 	eval $$(minikube docker-env) && docker build ./controller -t grafana-dashboard-operator:${BUILD_NUMBER}
 
 	docker run --mount "type=bind,src=$$PWD/manifests,dst=/src" ghcr.io/srfrnk/k8s-jsonnet-manifest-packager:latest -- /src \
-		--tla-str 'imagePrefix=' \
+		--tla-str 'imagePrefix=grafana-dashboard-operator' \
 		--tla-str 'buildNumber=${BUILD_NUMBER}' \
 		> build/manifests.yaml
 

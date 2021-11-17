@@ -5,7 +5,7 @@ function(imagePrefix, buildNumber) (
     name='grafana-dashboard-operator',
     replicas=1,
     containers=[
-      kube.Container(name='controller', image=imagePrefix + 'grafana-dashboard-operator:' + buildNumber) +
+      kube.Container(name='controller', image=imagePrefix + ':' + buildNumber) +
       {
         env+: [
           {
