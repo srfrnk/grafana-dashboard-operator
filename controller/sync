@@ -63,9 +63,9 @@ for dashboard in ${dashboardsJson} ${grafonnetDashboards[@]} ${dashboardJson}; d
       uid=$(printf "%s" "${body}" | yq e .uid -)
       uids=${uids}'"'${uid}'",'
     else
-      printf "Failed updating dashboard '%s': status-code=%s message=%s err=%s" ${name} ${status} ${body} $(<err) >&2
+      printf "Failed updating dashboard '%s': status-code=%s message=%s err=%s" ${name} ${status} ${body} $(<$err) >&2
       printf "Content-type: text/plain\n\n"
-      printf "%s" "$(<err)"
+      printf "%s" "$(<$err)"
       exit 1
     fi
   fi
