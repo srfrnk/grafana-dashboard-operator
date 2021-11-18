@@ -2,27 +2,27 @@
 IFS=$'\n'
 WORKDIR=$(pwd)
 
-printf 'Sync...\n' >&2
+printf "Sync...\n" >&2
 
 REQUEST=$(cat)
-printf 'Request: %s\n' "$(printf '%s' "${REQUEST}" | jq -c)" >&2
+printf "Request: %s\n" "$(printf "%s" "${REQUEST}" | jq -c)" >&2
 
 token="$(cat /grafana_api/token)"
 host="${GRAFANA_HOST}"
 
-name=$(yq e "[.parent.metadata.namespace,.parent.metadata.name]|join(\"/\")" <(printf '%s' "${REQUEST}"))
-dashboardsJson=$(yq e -o=json -I0 ".parent.spec.dashboards.[]" <(printf '%s' "${REQUEST}"))
-dashboardJson=$(yq e -o=json -I0 ".parent.spec.dashboard" <(printf '%s' "${REQUEST}"))
-grafonnetFiles=$(yq e -o=json -I0 ".parent.spec.grafonnet | to_entries | .[]" <(printf '%s' "${REQUEST}"))
+name=$(yq e "[.parent.metadata.namespace,.parent.metadata.name]|join(\"/\")" <(printf "%s" "${REQUEST}"))
+dashboardsJson=$(yq e -o=json -I0 ".parent.spec.dashboards.[]" <(printf "%s" "${REQUEST}"))
+dashboardJson=$(yq e -o=json -I0 ".parent.spec.dashboard" <(printf "%s" "${REQUEST}"))
+grafonnetFiles=$(yq e -o=json -I0 ".parent.spec.grafonnet | to_entries | .[]" <(printf "%s" "${REQUEST}"))
 
 grafonnetDir=$(mktemp -d -p /grafonnet_tmp)
 ln -s /grafonnet_tmp/vendor/ ${grafonnetDir}/vendor
 cd ${grafonnetDir}
 
 for grafonnetFile in ${grafonnetFiles}; do
-  grafonnetFileName=$(yq e ".key" <(printf '%s' "${grafonnetFile}"))
-  grafonnetFileContent=$(yq e ".value" <(printf '%s' "${grafonnetFile}"))
-  printf '%s' "${grafonnetFileContent}" > "${grafonnetFileName}"
+  grafonnetFileName=$(yq e ".key" <(printf "%s" "${grafonnetFile}"))
+  grafonnetFileContent=$(yq e ".value" <(printf "%s" "${grafonnetFile}"))
+  printf "%s" "${grafonnetFileContent}" > "${grafonnetFileName}"
 done
 
 grafonnetDashboards=();
@@ -37,33 +37,44 @@ uids=""
 for dashboard in ${dashboardsJson} ${grafonnetDashboards[@]} ${dashboardJson}; do
   if [ "${dashboard}" != "null" ]
   then
-    folder=$(yq e ".folder" <(printf '%s' "${dashboard}"))
+    folder=$(yq e ".folder" <(printf "%s" "${dashboard}"))
     if [ "${folder}" != "null" ]
     then
-      encodedFolder=$(printf '%s' "${folder}" | jq -sRr @uri)
+      encodedFolder=$(printf "%s" "${folder}" | jq -sRr @uri)
       folderId=$(curl -k --silent -H 'Content-Type: application/json' -H "Authorization: Bearer ${token}" "${host}/api/search?type=dash-folder&limit=1&query=${encodedFolder}" | yq e ".[0].id" -)
       if [ "${folderId}" == "null" ]
       then
         folderId=$(curl -k --silent -H 'Content-Type: application/json' -H "Authorization: Bearer ${token}" -d "{\"title\":\"${folder}\"}" "${host}/api/folders" | yq e .id -)
       fi
-      dashboard=$(yq e -o=json -I0 ".folderId = ${folderId}" <(printf '%s' "${dashboard}"))
+      dashboard=$(yq e -o=json -I0 ".folderId = ${folderId}" <(printf "%s" "${dashboard}"))
     fi
-    res=$(curl -k --silent -H 'Content-Type: application/json' -H "Authorization: Bearer ${token}" -d "${dashboard}" "${host}/api/dashboards/db" -w "\n%{http_code}")
-    body=$(printf "${res}" | head -n -1)
-    status=$(printf "${res}" | tail -n 1)
+
+    out=$(mktemp)
+    err=$(mktemp)
+    trap "rm -f $out $err" EXIT
+
+    curl -k --silent -H 'Content-Type: application/json' -H "Authorization: Bearer ${token}" -d "${dashboard}" "${host}/api/dashboards/db" -w "\n%{http_code}" 1>$out 2>$err
+
+    res=$(<$out)
+    body=$(printf "%s" "${res}" | head -n -1)
+    status=$(printf "%s" "${res}" | tail -n 1)
     if [ "${status}" == "200" ]
     then
-      uid=$(printf "${body}" | yq e .uid -)
+      uid=$(printf "%s" "${body}" | yq e .uid -)
       uids=${uids}'"'${uid}'",'
     else
-      printf "Failed updating board '%s': status-code=%s message=%s" ${name} ${status} ${body} >&2
+      printf "Failed updating dashboard '%s': status-code=%s message=%s err=%s" ${name} ${status} ${body} $(<err) >&2
+      printf "Content-type: text/plain\n\n"
+      printf "%s" "$(<err)"
+      exit 1
     fi
   fi
 done
+
 uids="["${uids%?}"]"
 
-RESPONSE=$(jsonnet sync.jsonnet --tla-str now=$(date --iso-8601=ns) --tla-code-file uids=<(printf '%s' "${uids}") --tla-code-file request=<(printf '%s' "${REQUEST}" 2>/dev/null) | jq -c)
-printf 'Response: %s\n' "${RESPONSE}" >&2
+RESPONSE=$(jsonnet sync.jsonnet --tla-str now=$(date --iso-8601=ns) --tla-code-file uids=<(printf "%s" "${uids}") --tla-code-file request=<(printf "%s" "${REQUEST}" 2>/dev/null) | jq -c)
+printf "Response: %s\n" "${RESPONSE}" >&2
 
 printf "Content-type: application/json\n\n"
-printf '%s' "${RESPONSE}"
+printf "%s" "${RESPONSE}"

@@ -13,12 +13,15 @@ setup:
 	- helm upgrade --namespace monitoring --install --wait kube-prometheus-stack --repo https://prometheus-community.github.io/helm-charts kube-prometheus-stack
 	kubectl wait deployments.apps/kube-prometheus-stack-grafana --namespace monitoring --for condition=available --timeout=0s --request-timeout='0'
 	- kubectl apply -n metacontroller -k https://github.com/metacontroller/metacontroller/manifests/production
-	sleep 120 # Allow time for Grafana to kick in - next thing we're calling it's API...
-	- kubectl delete secret --namespace grafana-dashboard-operator grafana-api
-	- kubectl --namespace grafana-dashboard-operator create secret generic grafana-api \
-		--from-literal=token=$(shell \
-		 	echo "curl -X POST -H \"Content-Type: application/json\" -d '{\"name\":\"apikey$${RANDOM}\", \"role\": \"Admin\"}' http://admin:prom-operator@kube-prometheus-stack-grafana/api/auth/keys 2>/dev/null ; echo" | \
-		 	kubectl run -i --rm -n monitoring --image curlimages/curl curl$${RANDOM} -- sh 2>/dev/null | grep -v -e "pod .* deleted" | yq eval '.key' -)
+	- kubectl delete secret -n grafana-dashboard-operator grafana-api
+	TOKEN="null"; \
+		while [ "$${TOKEN}" = "null" ]; do \
+			TOKEN=$$(echo "curl -X POST -H \"Content-Type: application/json\" -d '{\"name\":\"apikey$${RANDOM}\", \"role\": \"Admin\"}' \
+			http://admin:prom-operator@kube-prometheus-stack-grafana/api/auth/keys 2>/dev/null ; echo" \
+			| kubectl run -i --rm -n monitoring --image curlimages/curl curl$${RANDOM} -- sh 2>/dev/null \
+			| grep -v -e "pod .* deleted" | yq eval '.key' -); \
+		done; \
+		kubectl -n grafana-dashboard-operator create secret generic grafana-api --from-literal=token=$${TOKEN}
 
 build_number: FORCE
 	$(eval BUILD_NUMBER=$(shell od -An -N10 -i /dev/urandom | tr -d ' -' ))
