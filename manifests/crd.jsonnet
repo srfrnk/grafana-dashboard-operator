@@ -23,8 +23,18 @@ function(imagePrefix, buildNumber) (
                        properties: {
                          uids: {
                            type: 'array',
+                           description: 'List of grafana dashboard UIDs',
                            items: {
                              type: 'string',
+                             description: 'A Grafana dashboard UID',
+                           },
+                         },
+                         lastDeploy: {
+                           type: 'object',
+                           description: 'Map of last deployed hashes',
+                           additionalProperties: {
+                             type: 'string',
+                             description: 'Last deployed hash',
                            },
                          },
                        },
