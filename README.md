@@ -261,8 +261,8 @@ spec:
 ### Deploy
 
 1. Create a minikube cluster: `minikube start`
-2. Run `make local-setup`
-3. Run `make local-update`
+2. Run `make setup`
+3. Run `make update`
 4. Run `make pf-grafana` then open your browser at http://localhost:3000 to Grafana GUI.
 
 ### Tests Examples
