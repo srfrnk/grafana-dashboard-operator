@@ -1,7 +1,7 @@
 FROM httpd:2.4.41-alpine
 
 RUN apk update &&\
-    apk add curl jq coreutils git make musl-dev go findutils nano
+    apk add --update curl jq coreutils git make musl-dev go findutils nano
 
 RUN wget https://github.com/google/go-jsonnet/releases/download/v0.17.0/go-jsonnet_0.17.0_Linux_x86_64.tar.gz -O jsonnet.tar.gz
 RUN tar -xzf jsonnet.tar.gz &&\
