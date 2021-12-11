@@ -247,6 +247,10 @@ p {
   font-size: 0.8em;
 }
 
+.crd .prop-enum {
+  font-size: 0.8em;
+}
+
 .crd .prop-required {
   font-weight: bold;
   font-variant:small-caps;
@@ -298,7 +302,7 @@ p {
             <p><h1>Grafana Dashboard Operator</h1></p>
             <p>A Kubernetes operator to deploy Grafana dashboards</p>
             <p>
-                <div class="app-desc">Version: 1.0.13</div>
+                <div class="app-desc">Version: 1.0.14</div>
             </p>
           </div>
         </div>
@@ -341,7 +345,8 @@ p {
               var typeSection = `
                 <td class="prop-type-info">
                   <p class="prop-type">${schema.type||''}</p>
-                  ${!schema.isRequired?'':' <p class="prop-required">required</p>'}
+                  ${!schema.enum?'':`<p class="prop-enum">Enum: ${schema.enum.map(v=>`"${v}"`).join(', ')}</p>`}
+                  ${!schema.isRequired?'':'<p class="prop-required">required</p>'}
                   ${!schema.default?'':`<p class="prop-default">Default: ${JSON.stringify(schema.default)}</p>`}
                 </td>
               `;
